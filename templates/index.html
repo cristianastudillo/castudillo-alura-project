@@ -1,0 +1,215 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1" />
+  <title>Asistente sobre tus PDFs</title>
+  <style>
+    :root {
+      --bg: #0f1419;
+      --surface: #1a2332;
+      --border: #2d3a4f;
+      --text: #e7ecf3;
+      --muted: #8b9cb3;
+      --accent: #4f8cff;
+      --accent-hover: #3d78e8;
+      --user: #243044;
+      --bot: #1e2a3d;
+    }
+    * { box-sizing: border-box; }
+    body {
+      margin: 0;
+      min-height: 100dvh;
+      font-family: system-ui, -apple-system, "Segoe UI", Roboto, sans-serif;
+      background: var(--bg);
+      color: var(--text);
+      display: flex;
+      flex-direction: column;
+    }
+    header {
+      padding: 1rem 1.25rem;
+      border-bottom: 1px solid var(--border);
+      background: var(--surface);
+    }
+    header h1 {
+      margin: 0;
+      font-size: clamp(1.1rem, 4vw, 1.35rem);
+      font-weight: 600;
+    }
+    header p {
+      margin: 0.35rem 0 0;
+      font-size: 0.875rem;
+      color: var(--muted);
+    }
+    .docs {
+      margin-top: 0.5rem;
+      font-size: 0.8rem;
+      color: var(--muted);
+    }
+    main {
+      flex: 1;
+      display: flex;
+      flex-direction: column;
+      max-width: 720px;
+      width: 100%;
+      margin: 0 auto;
+      padding: 1rem;
+    }
+    #chat {
+      flex: 1;
+      overflow-y: auto;
+      display: flex;
+      flex-direction: column;
+      gap: 0.75rem;
+      padding-bottom: 1rem;
+      min-height: 200px;
+    }
+    .msg {
+      padding: 0.85rem 1rem;
+      border-radius: 12px;
+      line-height: 1.5;
+      font-size: 0.95rem;
+      white-space: pre-wrap;
+      word-break: break-word;
+    }
+    .msg.user {
+      background: var(--user);
+      align-self: flex-end;
+      max-width: 92%;
+      border: 1px solid var(--border);
+    }
+    .msg.bot {
+      background: var(--bot);
+      align-self: flex-start;
+      max-width: 100%;
+      border: 1px solid var(--border);
+    }
+    .msg .sources {
+      margin-top: 0.75rem;
+      padding-top: 0.5rem;
+      border-top: 1px solid var(--border);
+      font-size: 0.75rem;
+      color: var(--muted);
+    }
+    .empty {
+      color: var(--muted);
+      text-align: center;
+      padding: 2rem 1rem;
+      font-size: 0.9rem;
+    }
+    form {
+      display: flex;
+      gap: 0.5rem;
+      padding-top: 0.5rem;
+      border-top: 1px solid var(--border);
+    }
+    textarea {
+      flex: 1;
+      min-height: 48px;
+      max-height: 120px;
+      resize: vertical;
+      padding: 0.65rem 0.85rem;
+      border-radius: 10px;
+      border: 1px solid var(--border);
+      background: var(--surface);
+      color: var(--text);
+      font: inherit;
+    }
+    textarea:focus {
+      outline: 2px solid var(--accent);
+      outline-offset: 1px;
+    }
+    button {
+      padding: 0.65rem 1.1rem;
+      border: none;
+      border-radius: 10px;
+      background: var(--accent);
+      color: #fff;
+      font-weight: 600;
+      cursor: pointer;
+      align-self: flex-end;
+    }
+    button:hover:not(:disabled) { background: var(--accent-hover); }
+    button:disabled {
+      opacity: 0.55;
+      cursor: not-allowed;
+    }
+    .error { color: #ff8a8a; }
+    @media (max-width: 480px) {
+      form { flex-direction: column; }
+      button { width: 100%; align-self: stretch; }
+    }
+  </style>
+</head>
+<body>
+  <header>
+    <h1>Preguntas sobre tus PDFs</h1>
+    <p>Respuestas basadas solo en tus documentos (Gemini).</p>
+    <div class="docs">
+      {% if doc_count %}
+        {{ doc_count }} PDF(s): {{ doc_names | join(", ") }}
+      {% else %}
+        No hay PDFs en <code>documents/</code>. Añade archivos y recarga la página.
+      {% endif %}
+    </div>
+  </header>
+  <main>
+    <div id="chat">
+      <div class="empty" id="placeholder">Escribe una pregunta sobre el contenido de tus PDFs.</div>
+    </div>
+    <form id="form">
+      <textarea id="question" rows="2" placeholder="Tu pregunta…" required></textarea>
+      <button type="submit" id="send">Enviar</button>
+    </form>
+  </main>
+  <script>
+    const chat = document.getElementById("chat");
+    const form = document.getElementById("form");
+    const questionEl = document.getElementById("question");
+    const sendBtn = document.getElementById("send");
+    const placeholder = document.getElementById("placeholder");
+
+    function addMsg(text, role, sources) {
+      if (placeholder) placeholder.remove();
+      const div = document.createElement("div");
+      div.className = "msg " + role;
+      div.textContent = text;
+      if (sources && sources.length) {
+        const s = document.createElement("div");
+        s.className = "sources";
+        s.textContent = "Fuentes: " + sources.join(", ");
+        div.appendChild(s);
+      }
+      chat.appendChild(div);
+      chat.scrollTop = chat.scrollHeight;
+    }
+
+    form.addEventListener("submit", async (e) => {
+      e.preventDefault();
+      const q = questionEl.value.trim();
+      if (!q) return;
+      addMsg(q, "user");
+      questionEl.value = "";
+      sendBtn.disabled = true;
+      try {
+        const res = await fetch("/api/ask", {
+          method: "POST",
+          headers: { "Content-Type": "application/json" },
+          body: JSON.stringify({ question: q }),
+        });
+        const data = await res.json();
+        if (!res.ok) {
+          addMsg(data.error || "Error desconocido", "bot");
+          return;
+        }
+        addMsg(data.answer, "bot", data.sources);
+      } catch (err) {
+        addMsg("No se pudo conectar con el servidor.", "bot");
+      } finally {
+        sendBtn.disabled = false;
+        questionEl.focus();
+      }
+    });
+  </script>
+</body>
+</html>

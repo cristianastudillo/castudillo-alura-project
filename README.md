@@ -1,11 +1,11 @@
-# Asistente Q&A sobre PDFs (Gemini)
+# Asistente Q&A sobre PDFs (Cohere)
 
-Aplicación simple en Python: carga PDFs de la carpeta `documents/`, recupera fragmentos relevantes y responde con **Google Gemini** usando **solo** ese contexto. Interfaz web HTML responsive.
+Aplicación simple en Python: carga PDFs de la carpeta `documents/`, recupera fragmentos relevantes y responde con **Cohere** usando **solo** ese contexto. Interfaz web HTML responsive.
 
 ## Requisitos
 
 - Python 3.10+
-- API key de [Google AI Studio](https://aistudio.google.com/apikey)
+- API key de [Cohere Dashboard](https://dashboard.cohere.com/api-keys)
 
 ## Instalación
 
@@ -16,7 +16,7 @@ pip install -r requirements.txt
 copy .env.example .env
 ```
 
-Edita `.env` y pon tu `GEMINI_API_KEY`.
+Edita `.env` y pon tu `COHERE_API_KEY`.
 
 ## Uso
 
@@ -38,7 +38,7 @@ Si añades PDFs con el servidor en marcha, reinicia la app o llama a `POST /api/
 | `app.py` | Servidor Flask y rutas |
 | `pdf_loader.py` | Extracción de texto con PyPDF |
 | `rag.py` | Troceado y búsqueda de fragmentos |
-| `gemini_client.py` | Llamada a Gemini con instrucciones estrictas |
+| `cohere_client.py` | Llamada a Cohere con instrucciones estrictas |
 | `templates/index.html` | Chat responsive |
 
 ## Notas

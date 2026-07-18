@@ -4,7 +4,7 @@ from pathlib import Path
 from dotenv import load_dotenv
 from flask import Flask, jsonify, render_template, request
 
-from gemini_client import ask_gemini, normalize_api_key, validate_api_key
+from cohere_client import ask_cohere, normalize_api_key, validate_api_key
 from pdf_loader import load_pdfs
 from rag import build_index, format_context, retrieve
 
@@ -37,7 +37,7 @@ def api_ask():
     try:
         chunks = retrieve(question, _index)
         context = format_context(chunks)
-        answer = ask_gemini(question, context)
+        answer = ask_cohere(question, context)
         return jsonify(
             {
                 "answer": answer,
@@ -48,36 +48,34 @@ def api_ask():
         return jsonify({"error": str(e)}), 500
     except Exception as e:
         err = str(e)
-        if "API key not valid" in err or "API_KEY_INVALID" in err:
+        if "invalid api token" in err.lower() or "unauthorized" in err.lower():
             return jsonify(
                 {
                     "error": (
-                        "Google rechazó la API key. Revisa: (1) clave nueva en "
-                        "https://aistudio.google.com/apikey, (2) en .env una sola línea "
-                        "GEMINI_API_KEY=AIza... sin comillas ni espacios, (3) reinicia "
+                        "Cohere rechazó la API key. Revisa: (1) clave nueva en "
+                        "https://dashboard.cohere.com/api-keys, (2) en .env una sola línea "
+                        "COHERE_API_KEY=... sin comillas ni espacios, (3) reinicia "
                         "python app.py después de guardar .env. Si la clave es antigua, créala de nuevo."
                     )
                 }
             ), 500
-        return jsonify({"error": f"Error al consultar Gemini: {e}"}), 500
+        return jsonify({"error": f"Error al consultar Cohere: {e}"}), 500
 
 
 @app.route("/api/config-check")
 def api_config_check():
     """Indica si .env se cargó; no expone la clave."""
-    key = normalize_api_key(os.environ.get("GEMINI_API_KEY"))
-    ok = bool(key.startswith("AIza") and len(key) >= 30)
+    key = normalize_api_key(os.environ.get("COHERE_API_KEY"))
+    ok = bool(key and len(key) >= 20)
     hint = None
     if not key:
-        hint = "Define GEMINI_API_KEY en .env y reinicia el servidor."
-    elif key.startswith("AQ."):
-        hint = "Valor tipo AQ.* detectado: sustitúyelo por una API key AIzaSy... de AI Studio."
-    elif not key.startswith("AIza"):
-        hint = "La clave debe empezar por AIzaSy... (Google AI Studio)."
+        hint = "Define COHERE_API_KEY en .env y reinicia el servidor."
+    elif len(key) < 20:
+        hint = "La clave parece incompleta. Cópiala desde https://dashboard.cohere.com/api-keys"
     return jsonify(
         {
             "env_file": str(BASE_DIR / ".env"),
-            "gemini_key_configured": ok,
+            "cohere_key_configured": ok,
             "key_length": len(key) if key else 0,
             "hint": hint,
         }

@@ -1,4 +1,5 @@
 import os
+from typing import Optional
 
 import cohere
 
@@ -12,7 +13,7 @@ Reglas:
 - Sé conciso y claro."""
 
 
-def normalize_api_key(raw: str | None) -> str:
+def normalize_api_key(raw: Optional[str]) -> str:
     if not raw:
         return ""
     key = raw.strip().strip("﻿").strip('"').strip("'")
@@ -35,7 +36,7 @@ def validate_api_key(key: str) -> None:
         )
 
 
-def ask_cohere(question: str, context: str, api_key: str | None = None) -> str:
+def ask_cohere(question: str, context: str, api_key: Optional[str] = None) -> str:
     key = normalize_api_key(api_key or os.environ.get("COHERE_API_KEY"))
     validate_api_key(key)
 

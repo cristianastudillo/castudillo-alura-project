@@ -5,9 +5,9 @@ After=network.target
 [Service]
 Type=simple
 User=opc
-WorkingDirectory=/home/opc/castudillo-alura-project
-EnvironmentFile=/home/opc/castudillo-alura-project/.env
-ExecStart=/home/opc/castudillo-alura-project/venv/bin/gunicorn --bind 0.0.0.0:8000 --workers 2 app:app
+WorkingDirectory=/opt/castudillo-alura-project
+EnvironmentFile=/opt/castudillo-alura-project/.env
+ExecStart=/opt/castudillo-alura-project/venv/bin/gunicorn --bind 0.0.0.0:8000 --workers 2 app:app
 Restart=always
 RestartSec=5
 

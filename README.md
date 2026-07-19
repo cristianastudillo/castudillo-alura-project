@@ -37,6 +37,10 @@ La app está desplegada en una instancia de **Oracle Cloud Infrastructure (OCI)*
 
 Acceso: `https://129.151.126.75` (el navegador mostrará una advertencia de certificado no confiable por ser autofirmado; puedes continuar de forma segura).
 
+Estado del servicio en el servidor (`sudo systemctl status castudillo-app`):
+
+![Servicio castudillo-app corriendo en Oracle Cloud Shell](docs/castudillo-app-status.PNG)
+
 ## Estructura
 
 | Archivo | Rol |

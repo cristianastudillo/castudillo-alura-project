@@ -31,6 +31,12 @@ python app.py
 
 Si añades PDFs con el servidor en marcha, reinicia la app o llama a `POST /api/reload` para volver a indexar.
 
+## Despliegue
+
+La app está desplegada en una instancia de **Oracle Cloud Infrastructure (OCI)**, corriendo como servicio `systemd` detrás de un proxy inverso **nginx** con certificado **SSL autofirmado**.
+
+Acceso: `https://129.151.126.75` (el navegador mostrará una advertencia de certificado no confiable por ser autofirmado; puedes continuar de forma segura).
+
 ## Estructura
 
 | Archivo | Rol |

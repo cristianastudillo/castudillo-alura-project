@@ -209,7 +209,7 @@
       <div class="empty" id="placeholder">Escribe una pregunta o elige una sugerencia sobre el contenido de tus PDFs.</div>
     </div>
     <form id="form">
-      <textarea id="question" rows="2" placeholder="Tu pregunta…" required></textarea>
+      <textarea id="question" rows="2" placeholder="Tu pregunta…" required autofocus></textarea>
       <button type="submit" id="send">Enviar</button>
     </form>
   </main>
@@ -269,6 +269,13 @@
       if (!q) return;
       questionEl.value = "";
       sendQuestion(q);
+    });
+
+    questionEl.addEventListener("keydown", (e) => {
+      if (e.key === "Enter" && !e.shiftKey) {
+        e.preventDefault();
+        form.requestSubmit();
+      }
     });
 
     suggestions.addEventListener("click", (e) => {

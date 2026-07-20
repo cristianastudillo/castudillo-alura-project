@@ -6,7 +6,7 @@ from flask import Flask, jsonify, render_template, request
 
 from cohere_client import ask_cohere, normalize_api_key, validate_api_key
 from pdf_loader import load_pdfs
-from rag import build_index, format_context, retrieve
+from rag import build_index, first_chunk_per_source, format_context, retrieve
 
 BASE_DIR = Path(__file__).resolve().parent
 load_dotenv(BASE_DIR / ".env")
@@ -16,6 +16,15 @@ app = Flask(__name__)
 
 _documents = load_pdfs(DOCUMENTS_DIR)
 _index = build_index(_documents)
+
+
+def _document_type(name: str) -> str:
+    return "diplomado" if name.lower().startswith("diplomado") else "curso"
+
+
+def _catalog_text(documents: list[tuple[str, str]]) -> str:
+    lines = [f"- {name} ({_document_type(name)})" for name, _ in documents]
+    return "Catálogo de programas disponibles (nombre de archivo y tipo):\n" + "\n".join(lines)
 
 
 @app.route("/")
@@ -54,13 +63,17 @@ def api_ask():
             (m["content"] for m in reversed(history) if m["role"] == "user"), ""
         )
         retrieval_query = f"{last_user_question} {question}".strip()
-        chunks = retrieve(retrieval_query, _index)
-        context = format_context(chunks)
+        relevant_chunks = retrieve(retrieval_query, _index)
+        seen_sources = {c.source for c in relevant_chunks}
+        coverage_chunks = [
+            c for c in first_chunk_per_source(_index) if c.source not in seen_sources
+        ]
+        context = _catalog_text(_documents) + "\n\n" + format_context(relevant_chunks + coverage_chunks)
         answer = ask_cohere(question, context, history=history)
         return jsonify(
             {
                 "answer": answer,
-                "sources": list({c.source for c in chunks}),
+                "sources": list({c.source for c in relevant_chunks}),
             }
         )
     except ValueError as e:

@@ -66,6 +66,18 @@ def retrieve(question: str, index: list[TextChunk], top_k: int = TOP_K) -> list[
     return [c for _, c in scored[:top_k]]
 
 
+def first_chunk_per_source(index: list[TextChunk]) -> list[TextChunk]:
+    """Un fragmento representativo (el primero) de cada documento, para
+    asegurar que el modelo conozca todos los programas disponibles."""
+    seen: set[str] = set()
+    result: list[TextChunk] = []
+    for chunk in index:
+        if chunk.source not in seen:
+            seen.add(chunk.source)
+            result.append(chunk)
+    return result
+
+
 def format_context(chunks: list[TextChunk]) -> str:
     if not chunks:
         return ""

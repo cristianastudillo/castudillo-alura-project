@@ -6,54 +6,95 @@
   <title>Asistente sobre tus PDFs</title>
   <style>
     :root {
-      --bg: #0f1419;
-      --surface: #1a2332;
-      --border: #2d3a4f;
-      --text: #e7ecf3;
-      --muted: #8b9cb3;
-      --accent: #4f8cff;
-      --accent-hover: #3d78e8;
-      --user: #243044;
-      --bot: #1e2a3d;
+      --navy-900: #09264e;
+      --navy-800: #143564;
+      --navy-700: #1c4c8f;
+      --blue-500: #2c87d6;
+      --blue-100: #d7e3f8;
+      --orange-600: #e9691c;
+      --orange-500: #fc9d00;
+      --orange-100: #fdeed2;
+      --bg: #f5f7fb;
+      --surface: #ffffff;
+      --border: #e1e7f2;
+      --text: #16233c;
+      --muted: #5b6b85;
     }
     * { box-sizing: border-box; }
     body {
       margin: 0;
       min-height: 100dvh;
-      font-family: system-ui, -apple-system, "Segoe UI", Roboto, sans-serif;
+      font-family: "Source Sans Pro", "Segoe UI", Helvetica, Arial, sans-serif;
       background: var(--bg);
       color: var(--text);
       display: flex;
       flex-direction: column;
     }
     header {
-      padding: 1rem 1.25rem;
-      border-bottom: 1px solid var(--border);
-      background: var(--surface);
+      padding: 1.5rem 1.25rem;
+      background: linear-gradient(120deg, var(--navy-900), var(--navy-700));
+      color: #fff;
+    }
+    header .eyebrow {
+      display: inline-block;
+      font-size: 0.7rem;
+      font-weight: 700;
+      letter-spacing: 0.08em;
+      text-transform: uppercase;
+      color: var(--orange-500);
+      background: rgba(252, 157, 0, 0.15);
+      border: 1px solid rgba(252, 157, 0, 0.4);
+      padding: 0.2rem 0.6rem;
+      border-radius: 999px;
+      margin-bottom: 0.6rem;
     }
     header h1 {
       margin: 0;
-      font-size: clamp(1.1rem, 4vw, 1.35rem);
-      font-weight: 600;
+      font-size: clamp(1.2rem, 4vw, 1.6rem);
+      font-weight: 700;
     }
     header p {
-      margin: 0.35rem 0 0;
-      font-size: 0.875rem;
-      color: var(--muted);
+      margin: 0.4rem 0 0;
+      font-size: 0.9rem;
+      color: var(--blue-100);
     }
     .docs {
-      margin-top: 0.5rem;
+      margin-top: 0.6rem;
       font-size: 0.8rem;
-      color: var(--muted);
+      color: var(--blue-100);
+      opacity: 0.85;
     }
     main {
       flex: 1;
       display: flex;
       flex-direction: column;
-      max-width: 720px;
+      max-width: 760px;
       width: 100%;
       margin: 0 auto;
-      padding: 1rem;
+      padding: 1rem 1.25rem 1.25rem;
+    }
+    .suggestions {
+      display: flex;
+      flex-wrap: wrap;
+      gap: 0.5rem;
+      margin: 1rem 0;
+    }
+    .chip {
+      border: 1px solid var(--blue-500);
+      background: var(--surface);
+      color: var(--navy-700);
+      font: inherit;
+      font-size: 0.82rem;
+      font-weight: 600;
+      padding: 0.45rem 0.85rem;
+      border-radius: 999px;
+      cursor: pointer;
+      transition: background 0.15s, color 0.15s, border-color 0.15s;
+    }
+    .chip:hover {
+      background: var(--navy-700);
+      border-color: var(--navy-700);
+      color: #fff;
     }
     #chat {
       flex: 1;
@@ -65,21 +106,22 @@
       min-height: 200px;
     }
     .msg {
-      padding: 0.85rem 1rem;
-      border-radius: 12px;
-      line-height: 1.5;
+      padding: 0.85rem 1.05rem;
+      border-radius: 14px;
+      line-height: 1.55;
       font-size: 0.95rem;
       white-space: pre-wrap;
       word-break: break-word;
+      box-shadow: 0 1px 2px rgba(9, 38, 78, 0.06);
     }
     .msg.user {
-      background: var(--user);
+      background: var(--navy-700);
+      color: #fff;
       align-self: flex-end;
       max-width: 92%;
-      border: 1px solid var(--border);
     }
     .msg.bot {
-      background: var(--bot);
+      background: var(--surface);
       align-self: flex-start;
       max-width: 100%;
       border: 1px solid var(--border);
@@ -100,7 +142,7 @@
     form {
       display: flex;
       gap: 0.5rem;
-      padding-top: 0.5rem;
+      padding-top: 0.75rem;
       border-top: 1px solid var(--border);
     }
     textarea {
@@ -116,25 +158,26 @@
       font: inherit;
     }
     textarea:focus {
-      outline: 2px solid var(--accent);
+      outline: 2px solid var(--blue-500);
       outline-offset: 1px;
     }
     button {
-      padding: 0.65rem 1.1rem;
+      padding: 0.65rem 1.2rem;
       border: none;
       border-radius: 10px;
-      background: var(--accent);
+      background: var(--orange-500);
       color: #fff;
-      font-weight: 600;
+      font-weight: 700;
       cursor: pointer;
       align-self: flex-end;
+      transition: background 0.15s;
     }
-    button:hover:not(:disabled) { background: var(--accent-hover); }
+    button:hover:not(:disabled) { background: var(--orange-600); }
     button:disabled {
       opacity: 0.55;
       cursor: not-allowed;
     }
-    .error { color: #ff8a8a; }
+    .error { color: #c0392b; }
     @media (max-width: 480px) {
       form { flex-direction: column; }
       button { width: 100%; align-self: stretch; }
@@ -143,6 +186,7 @@
 </head>
 <body>
   <header>
+    <span class="eyebrow">Asistente Eligemadera</span>
     <h1>Preguntas sobre tus PDFs</h1>
     <p>Respuestas basadas solo en tus documentos (Cohere).</p>
     <div class="docs">
@@ -154,8 +198,15 @@
     </div>
   </header>
   <main>
+    <div class="suggestions" id="suggestions">
+      <button type="button" class="chip" data-q="¿Cuál es el objetivo del curso?">🎯 Objetivo</button>
+      <button type="button" class="chip" data-q="Dame una descripción general del curso.">📘 Descripción</button>
+      <button type="button" class="chip" data-q="¿Quiénes son los relatores del curso?">🧑‍🏫 Relatores</button>
+      <button type="button" class="chip" data-q="¿Cuál es el cronograma o duración del curso?">🗓️ Cronograma</button>
+      <button type="button" class="chip" data-q="¿Cuáles son los precios del curso?">💲 Precios</button>
+    </div>
     <div id="chat">
-      <div class="empty" id="placeholder">Escribe una pregunta sobre el contenido de tus PDFs.</div>
+      <div class="empty" id="placeholder">Escribe una pregunta o elige una sugerencia sobre el contenido de tus PDFs.</div>
     </div>
     <form id="form">
       <textarea id="question" rows="2" placeholder="Tu pregunta…" required></textarea>
@@ -168,6 +219,7 @@
     const questionEl = document.getElementById("question");
     const sendBtn = document.getElementById("send");
     const placeholder = document.getElementById("placeholder");
+    const suggestions = document.getElementById("suggestions");
 
     function addMsg(text, role, sources) {
       if (placeholder) placeholder.remove();
@@ -184,12 +236,8 @@
       chat.scrollTop = chat.scrollHeight;
     }
 
-    form.addEventListener("submit", async (e) => {
-      e.preventDefault();
-      const q = questionEl.value.trim();
-      if (!q) return;
+    async function sendQuestion(q) {
       addMsg(q, "user");
-      questionEl.value = "";
       sendBtn.disabled = true;
       try {
         const res = await fetch("/api/ask", {
@@ -209,6 +257,20 @@
         sendBtn.disabled = false;
         questionEl.focus();
       }
+    }
+
+    form.addEventListener("submit", (e) => {
+      e.preventDefault();
+      const q = questionEl.value.trim();
+      if (!q) return;
+      questionEl.value = "";
+      sendQuestion(q);
+    });
+
+    suggestions.addEventListener("click", (e) => {
+      const btn = e.target.closest(".chip");
+      if (!btn) return;
+      sendQuestion(btn.dataset.q);
     });
   </script>
 </body>

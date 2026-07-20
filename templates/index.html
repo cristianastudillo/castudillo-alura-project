@@ -236,6 +236,8 @@
       chat.scrollTop = chat.scrollHeight;
     }
 
+    const history = [];
+
     async function sendQuestion(q) {
       addMsg(q, "user");
       sendBtn.disabled = true;
@@ -243,7 +245,7 @@
         const res = await fetch("/api/ask", {
           method: "POST",
           headers: { "Content-Type": "application/json" },
-          body: JSON.stringify({ question: q }),
+          body: JSON.stringify({ question: q, history }),
         });
         const data = await res.json();
         if (!res.ok) {
@@ -251,6 +253,8 @@
           return;
         }
         addMsg(data.answer, "bot", data.sources);
+        history.push({ role: "user", content: q });
+        history.push({ role: "assistant", content: data.answer });
       } catch (err) {
         addMsg("No se pudo conectar con el servidor.", "bot");
       } finally {

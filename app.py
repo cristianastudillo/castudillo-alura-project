@@ -27,17 +27,36 @@ def index():
     )
 
 
+def _sanitize_history(raw_history) -> list:
+    if not isinstance(raw_history, list):
+        return []
+    history = []
+    for item in raw_history:
+        if not isinstance(item, dict):
+            continue
+        role = item.get("role")
+        content = item.get("content")
+        if role in ("user", "assistant") and isinstance(content, str) and content.strip():
+            history.append({"role": role, "content": content.strip()})
+    return history
+
+
 @app.route("/api/ask", methods=["POST"])
 def api_ask():
     data = request.get_json(silent=True) or {}
     question = (data.get("question") or "").strip()
+    history = _sanitize_history(data.get("history"))
     if not question:
         return jsonify({"error": "Escribe una pregunta."}), 400
 
     try:
-        chunks = retrieve(question, _index)
+        last_user_question = next(
+            (m["content"] for m in reversed(history) if m["role"] == "user"), ""
+        )
+        retrieval_query = f"{last_user_question} {question}".strip()
+        chunks = retrieve(retrieval_query, _index)
         context = format_context(chunks)
-        answer = ask_cohere(question, context)
+        answer = ask_cohere(question, context, history=history)
         return jsonify(
             {
                 "answer": answer,
